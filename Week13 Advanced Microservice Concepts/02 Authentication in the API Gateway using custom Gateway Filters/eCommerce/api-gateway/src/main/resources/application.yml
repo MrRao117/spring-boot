@@ -1,0 +1,37 @@
+jwt:
+  secretkey: mysupersecuresecretkey123456789012
+spring:
+  application:
+    name: api-gateway
+
+#api-gateway config
+  cloud:
+    gateway:
+      routes:
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/v1/orders/**
+          filters:
+            - StripPrefix=2
+#            - RedirectTo=302, http://codingshuttle.com
+            - name: LoggingOrdersFilter
+            - name: Authentication
+              args:
+                isEnabled: false
+            - name: Authorization
+              args:
+                allowedRoles: ADMIN, SUPER_ADMIN
+        - id: inventory-service
+          uri: lb://INVENTORY-SERVICE
+          predicates:
+            - Path=/api/v1/inventory/**
+          filters:
+            - StripPrefix=2
+            - AddRequestHeader=X-Custom-Header, Tushar
+            - name: Authentication
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
